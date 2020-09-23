@@ -1,3 +1,3 @@
 module github.com/sunet/s3-mm-tool
 
-go 1.13
+go 1.14

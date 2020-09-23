@@ -1,10 +1,9 @@
 package storage
-
 import (
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/sirupsen/logrus"
-	"github.com/sunet/s3-mm-tool/manifest"
+	"github.com/sunet/s3-mm-tool/pkg/manifest"
 	"encoding/json"
 )
 
