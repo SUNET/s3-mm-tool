@@ -24,9 +24,9 @@ func CreateS3DataContainer(dst Destination, name string, creator string, publish
 		Secure: true
 	})
 	if err != nil {
-		return err	
+		return err
 	}
-	
+
 	err = minioClient.MakeBucket(ctx, name, minio.MakeBucketOptions{Region: dst.Region})
 	if err != nil {
 		exists, errBucketExists := minioClient.BucketExists(ctx, name)
@@ -36,7 +36,7 @@ func CreateS3DataContainer(dst Destination, name string, creator string, publish
 			return err
 		}
 	}
-	
+
 	mm := manifest.NewManifest(creator, publisher)
 	data, _ := json.Marshal(mm)
 	minioClient.PubObject(name, "META-DATA/manifest.jsonld")
