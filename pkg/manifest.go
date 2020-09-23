@@ -1,7 +1,8 @@
+package manifest
+
 import (
 	"github.com/piprate/json-gold"
 	"github.com/imdario/mergo"
-	
 )
 
 Context := map[string]interface{}{
@@ -15,7 +16,7 @@ Context := map[string]interface{}{
         "creator": { "@id": "dct:creator" },
         "rightsHolder": { "@id": "dct:rightsHolder" },
     }
-} 
+}
 
 
 func NewManifest(creator string, publisher string) (map[string]interface{}, error) {
