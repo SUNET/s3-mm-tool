@@ -35,8 +35,8 @@ endif
 all:
 	@$(MAKE) --no-print-directory s3-mm-tool #docs/mix.1
 
-.PHONY: mix
-mix:
+.PHONY: s3-mm-tool
+s3-mm-tool:
 	go build $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS)" ./cmd/tool
 
 docs/%.1: docs/%.ronn.1
