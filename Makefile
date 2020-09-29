@@ -37,7 +37,7 @@ all:
 
 .PHONY: s3-mm-tool
 s3-mm-tool:
-	go build $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS)" ./cmd/tool
+	go build $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS)" ./cmd/s3-mm-tool
 
 docs/%.1: docs/%.ronn.1
 	ronn -r $< > $@
