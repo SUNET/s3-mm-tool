@@ -10,11 +10,22 @@ import (
 
 	"github.com/sunet/s3-mm-tool/pkg/manifest"
 	"github.com/sunet/s3-mm-tool/pkg/meta"
+	"github.com/sunet/s3-mm-tool/pkg/storage"
 	"github.com/sunet/s3-mm-tool/pkg/utils"
 )
 
 var Log = logrus.New()
 var Handler *mux.Router
+
+type CreateRequest struct {
+	Manifest manifest.Manifest   `json:"manifest"`
+	Name     string              `json:"name"`
+	Storage  storage.Destination `json:"storage"`
+}
+
+type CreateResponse struct {
+	Manifest manifest.Manifest `json:"manifest"`
+}
 
 func Listen(hostPort string) {
 	http.Handle("/", Handler)
@@ -42,15 +53,39 @@ func status(w http.ResponseWriter, r *http.Request) {
 
 func create_dataset(w http.ResponseWriter, r *http.Request) {
 	m, err := manifest.NewManifest()
-	var mreq manifest.Manifest
-
-	err = json.NewDecoder(r.Body).Decode(&mreq)
 	if err != nil {
+		Log.Error(err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
-	} else {
-		manifest.MergeManifests(m, &mreq)
+		return
 	}
-	Log.Debug(*m)
+	var req CreateRequest
+
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		Log.Error(err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = m.MergeManifests(req.Manifest)
+	if err != nil {
+		Log.Error(err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = storage.CreateS3DataContainer(req.Storage, req.Name, *m)
+	if err != nil {
+		Log.Error(err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var res CreateResponse
+	res.Manifest = *m
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(res)
 }
 
 func init() {

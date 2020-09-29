@@ -16,11 +16,11 @@ var Log = logrus.New()
 type Destination struct {
 	Endpoint    string `json:"endpoint"`
 	Region      string `json:"region"`
-	AccessKeyID string `json:"accessKey"`
-	SecretKey   string `json:"secretKey"`
+	AccessKeyID string `json:"access_key"`
+	SecretKey   string `json:"secret_key"`
 }
 
-func CreateS3DataContainer(dst Destination, name string, creator string, publisher string) error {
+func CreateS3DataContainer(dst Destination, name string, mm manifest.Manifest) error {
 	ctx := context.Background()
 
 	minioClient, err := minio.New(dst.Endpoint, &minio.Options{
@@ -34,23 +34,19 @@ func CreateS3DataContainer(dst Destination, name string, creator string, publish
 	err = minioClient.MakeBucket(ctx, name, minio.MakeBucketOptions{Region: dst.Region})
 	if err != nil {
 		exists, errBucketExists := minioClient.BucketExists(ctx, name)
-		if errBucketExists == nil && exists {
-			return nil
-		} else {
+		if errBucketExists != nil || !exists {
 			return err
 		}
 	}
 
-	mm, err := manifest.NewSimpleManifest(creator, publisher)
-	if err != nil {
-		Log.Error(err)
-		return err
-	}
 	data, _ := json.Marshal(mm)
-	minioClient.PutObject(ctx,
+	Log.Debug(string(data))
+	info, err := minioClient.PutObject(ctx,
 		name,
-		"META-DATA/manifest.jsonld",
+		".metadata/manifest.jsonld",
 		bytes.NewReader(data), int64(len(data)),
 		minio.PutObjectOptions{ContentType: "application/json"})
-	return nil
+
+	Log.Debug(info)
+	return err
 }

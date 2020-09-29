@@ -63,6 +63,7 @@ func main() {
 	}()
 
 	if serverFlag {
+		Log.Debug("Starting api server")
 		api.Listen("0.0.0.0:3000")
 	}
 

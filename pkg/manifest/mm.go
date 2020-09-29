@@ -1,6 +1,8 @@
 package manifest
 
 import (
+	"encoding/json"
+
 	"github.com/imdario/mergo"
 	_ "github.com/piprate/json-gold/ld"
 	"github.com/sirupsen/logrus"
@@ -23,15 +25,15 @@ var Context = Manifest{
 
 type Manifest map[string]interface{}
 
-func AddContext(manifest *Manifest) error {
-	return MergeManifests(manifest, &Context)
+func (m *Manifest) AddContext() error {
+	return m.MergeManifests(Context)
 }
 
-func MergeManifests(to *Manifest, froms ...*Manifest) error {
+func (to *Manifest) MergeManifests(froms ...Manifest) error {
 	var err error
 
-	for from, _ := range froms {
-		err = mergo.Merge(to, from)
+	for _, from := range froms {
+		err = mergo.Merge(to, &from)
 		if err != nil {
 			return err
 		}
@@ -41,11 +43,19 @@ func MergeManifests(to *Manifest, froms ...*Manifest) error {
 
 func NewManifest() (*Manifest, error) {
 	m := new(Manifest)
-	err := AddContext(m)
+	err := m.AddContext()
 	if err != nil {
 		return nil, err
 	}
 	return m, nil
+}
+
+func (m *Manifest) SetString(key string, value string) {
+	(*m)[key] = value
+}
+
+func (m *Manifest) Get(key string) interface{} {
+	return (*m)[key]
 }
 
 func NewSimpleManifest(creator string, publisher string) (*Manifest, error) {
@@ -53,7 +63,15 @@ func NewSimpleManifest(creator string, publisher string) (*Manifest, error) {
 	if err != nil {
 		return nil, err
 	}
-	(*m)["creator"] = creator
-	(*m)["publisher"] = publisher
+	m.SetString("creator", creator)
+	m.SetString("publisher", publisher)
 	return m, nil
+}
+
+func (m *Manifest) ToString() string {
+	data, err := json.Marshal(m)
+	if err != nil {
+		Log.Fatal(err)
+	}
+	return string(data)
 }
