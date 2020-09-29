@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 
+	"github.com/sunet/s3-mm-tool/pkg/manifest"
 	"github.com/sunet/s3-mm-tool/pkg/meta"
 	"github.com/sunet/s3-mm-tool/pkg/utils"
 )
@@ -30,14 +31,6 @@ func Listen(hostPort string) {
 	}
 }
 
-func init() {
-	Handler = mux.NewRouter()
-	Handler.StrictSlash(true)
-
-	Handler.HandleFunc("/api/create", create_dataset)
-	Handler.HandleFunc("/api/status", status)
-}
-
 func status(w http.ResponseWriter, r *http.Request) {
 	status := map[string]interface{}{
 		"name":    "s3-mm-tool",
@@ -48,5 +41,22 @@ func status(w http.ResponseWriter, r *http.Request) {
 }
 
 func create_dataset(w http.ResponseWriter, r *http.Request) {
+	m, err := manifest.NewManifest()
+	var mreq manifest.Manifest
 
+	err = json.NewDecoder(r.Body).Decode(&mreq)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	} else {
+		manifest.MergeManifests(m, &mreq)
+	}
+	Log.Debug(*m)
+}
+
+func init() {
+	Handler = mux.NewRouter()
+	Handler.StrictSlash(true)
+
+	Handler.HandleFunc("/api/create", create_dataset)
+	Handler.HandleFunc("/api/status", status)
 }

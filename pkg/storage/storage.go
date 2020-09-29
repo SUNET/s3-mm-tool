@@ -41,7 +41,7 @@ func CreateS3DataContainer(dst Destination, name string, creator string, publish
 		}
 	}
 
-	mm, err := manifest.NewManifest(creator, publisher)
+	mm, err := manifest.NewSimpleManifest(creator, publisher)
 	if err != nil {
 		Log.Error(err)
 		return err
