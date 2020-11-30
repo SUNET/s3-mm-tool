@@ -2,7 +2,6 @@ package storage
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"os"
 
@@ -10,9 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
 
 	"github.com/sirupsen/logrus"
 	"github.com/sunet/s3-mm-tool/pkg/manifest"
@@ -49,9 +45,12 @@ func CreateS3DataContainer(dst Destination, name string, mm manifest.Manifest) e
 		return err
 	}
 
+	data, _ := json.Marshal(mm)
+	dataLen := int64(len(data))
+	Log.Debug(string(data))
 	_, err = s3Client.PutObject(&s3.PutObjectInput{
 		Body:          bytes.NewReader(data),
-		ContentLength: int64(len(data)),
+		ContentLength: &dataLen,
 		ContentType:   aws.String("application/json"),
 		Bucket:        bucket,
 		Key:           aws.String(".metadata/manifest.jsonld"),
@@ -67,35 +66,37 @@ func CreateS3DataContainer(dst Destination, name string, mm manifest.Manifest) e
 	if err != nil {
 		return err
 	}
+
+	return nil
 }
 
-func CreateS3DataContainerMinio(dst Destination, name string, mm manifest.Manifest) error {
-	ctx := context.Background()
+// func CreateS3DataContainerMinio(dst Destination, name string, mm manifest.Manifest) error {
+// 	ctx := context.Background()
 
-	minioClient, err := minio.New(dst.Endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(dst.AccessKeyID, dst.SecretKey, ""),
-		Secure: true,
-	})
-	if err != nil {
-		return err
-	}
+// 	minioClient, err := minio.New(dst.Endpoint, &minio.Options{
+// 		Creds:  credentials.NewStaticV4(dst.AccessKeyID, dst.SecretKey, ""),
+// 		Secure: true,
+// 	})
+// 	if err != nil {
+// 		return err
+// 	}
 
-	err = minioClient.MakeBucket(ctx, name, minio.MakeBucketOptions{Region: dst.Region})
-	if err != nil {
-		exists, errBucketExists := minioClient.BucketExists(ctx, name)
-		if errBucketExists != nil || !exists {
-			return err
-		}
-	}
+// 	err = minioClient.MakeBucket(ctx, name, minio.MakeBucketOptions{Region: dst.Region})
+// 	if err != nil {
+// 		exists, errBucketExists := minioClient.BucketExists(ctx, name)
+// 		if errBucketExists != nil || !exists {
+// 			return err
+// 		}
+// 	}
 
-	data, _ := json.Marshal(mm)
-	Log.Debug(string(data))
-	info, err := minioClient.PutObject(ctx,
-		name,
-		".metadata/manifest.jsonld",
-		bytes.NewReader(data), int64(len(data)),
-		minio.PutObjectOptions{ContentType: "application/json"})
+// 	data, _ := json.Marshal(mm)
+// 	Log.Debug(string(data))
+// 	info, err := minioClient.PutObject(ctx,
+// 		name,
+// 		".metadata/manifest.jsonld",
+// 		bytes.NewReader(data), int64(len(data)),
+// 		minio.PutObjectOptions{ContentType: "application/json"})
 
-	Log.Debug(info)
-	return err
-}
+// 	Log.Debug(info)
+// 	return err
+// }

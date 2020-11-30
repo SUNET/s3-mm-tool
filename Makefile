@@ -68,4 +68,6 @@ clean:
 docker:
 	docker build -t "s3-mm-tool:$(COMMIT)" .
 	docker tag s3-mm-tool:$(COMMIT) docker.sunet.se/s3-mm-tool:$(COMMIT)
+	docker tag s3-mm-tool:$(COMMIT) docker.sunet.se/s3-mm-tool:latest
 	docker push docker.sunet.se/s3-mm-tool:$(COMMIT)
+	docker push docker.sunet.se/s3-mm-tool:latest
