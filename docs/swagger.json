@@ -1,0 +1,177 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Create and initialize a research data bucket with a provided metadata manifest configuration.\nSet ACL to support remote indexing and register dataset with index server.",
+        "title": "S3 Metadata Manager Tool API",
+        "contact": {
+            "name": "SUNET NOC",
+            "url": "https://www.sunet.se/",
+            "email": "noc@sunet.se"
+        },
+        "license": {
+            "name": "BSD"
+        },
+        "version": "1.0"
+    },
+    "paths": {
+        "/create": {
+            "post": {
+                "description": "Create a new bucket using supplied credentials and initialize with manifest",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "create"
+                ],
+                "summary": "Creaate a new dataset bucket",
+                "parameters": [
+                    {
+                        "description": "Create dataset",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.CreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.CreateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": ""
+                    },
+                    "500": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/status": {
+            "get": {
+                "description": "Display status and version information",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "status"
+                ],
+                "summary": "Display status and version information",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.StatusResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Manifest": {
+            "type": "object",
+            "properties": {
+                "mm:creator": {
+                    "type": "string",
+                    "example": "joe@example.net"
+                },
+                "mm:identifier": {
+                    "type": "string",
+                    "example": "https://s3.example.com/mybucket"
+                },
+                "mm:manifest": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/manifest.ManifestEntry"
+                    }
+                },
+                "mm:publisher": {
+                    "type": "string",
+                    "example": "example.net"
+                },
+                "mm:rightsHolder": {
+                    "type": "string",
+                    "example": "example.com"
+                }
+            }
+        },
+        "api.CreateRequest": {
+            "type": "object",
+            "properties": {
+                "manifest": {
+                    "$ref": "#/definitions/Manifest"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "mybucket"
+                },
+                "storage": {
+                    "$ref": "#/definitions/storage.Destination"
+                }
+            }
+        },
+        "api.CreateResponse": {
+            "type": "object",
+            "properties": {
+                "manifest": {
+                    "$ref": "#/definitions/Manifest"
+                }
+            }
+        },
+        "api.StatusResponse": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "example": "s3-mm-tool"
+                },
+                "version": {
+                    "type": "string",
+                    "example": "1.0"
+                }
+            }
+        },
+        "manifest.ManifestEntry": {
+            "type": "object",
+            "properties": {
+                "@id": {
+                    "type": "string",
+                    "example": "@base/.metadata/dc.xml"
+                },
+                "mm:schema": {
+                    "type": "string",
+                    "example": "http://purl.org/dc/terms/"
+                }
+            }
+        },
+        "storage.Destination": {
+            "type": "object",
+            "properties": {
+                "access_key": {
+                    "type": "string",
+                    "example": "access1"
+                },
+                "endpoint": {
+                    "type": "string",
+                    "example": "https://s3.example.com/"
+                },
+                "region": {
+                    "type": "string",
+                    "example": "example-region"
+                },
+                "secret_key": {
+                    "type": "string",
+                    "example": "secret1"
+                }
+            }
+        }
+    }
+}

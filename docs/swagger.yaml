@@ -1,0 +1,122 @@
+definitions:
+  Manifest:
+    properties:
+      mm:creator:
+        example: joe@example.net
+        type: string
+      mm:identifier:
+        example: https://s3.example.com/mybucket
+        type: string
+      mm:manifest:
+        items:
+          $ref: '#/definitions/manifest.ManifestEntry'
+        type: array
+      mm:publisher:
+        example: example.net
+        type: string
+      mm:rightsHolder:
+        example: example.com
+        type: string
+    type: object
+  api.CreateRequest:
+    properties:
+      manifest:
+        $ref: '#/definitions/Manifest'
+      name:
+        example: mybucket
+        type: string
+      storage:
+        $ref: '#/definitions/storage.Destination'
+    type: object
+  api.CreateResponse:
+    properties:
+      manifest:
+        $ref: '#/definitions/Manifest'
+    type: object
+  api.StatusResponse:
+    properties:
+      name:
+        example: s3-mm-tool
+        type: string
+      version:
+        example: "1.0"
+        type: string
+    type: object
+  manifest.ManifestEntry:
+    properties:
+      '@id':
+        example: '@base/.metadata/dc.xml'
+        type: string
+      mm:schema:
+        example: http://purl.org/dc/terms/
+        type: string
+    type: object
+  storage.Destination:
+    properties:
+      access_key:
+        example: access1
+        type: string
+      endpoint:
+        example: https://s3.example.com/
+        type: string
+      region:
+        example: example-region
+        type: string
+      secret_key:
+        example: secret1
+        type: string
+    type: object
+info:
+  contact:
+    email: noc@sunet.se
+    name: SUNET NOC
+    url: https://www.sunet.se/
+  description: |-
+    Create and initialize a research data bucket with a provided metadata manifest configuration.
+    Set ACL to support remote indexing and register dataset with index server.
+  license:
+    name: BSD
+  title: S3 Metadata Manager Tool API
+  version: "1.0"
+paths:
+  /create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new bucket using supplied credentials and initialize with
+        manifest
+      parameters:
+      - description: Create dataset
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.CreateResponse'
+        "400":
+          description: ""
+        "500":
+          description: ""
+      summary: Creaate a new dataset bucket
+      tags:
+      - create
+  /status:
+    get:
+      description: Display status and version information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StatusResponse'
+      summary: Display status and version information
+      tags:
+      - status
+swagger: "2.0"

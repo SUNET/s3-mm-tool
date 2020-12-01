@@ -35,8 +35,12 @@ endif
 all:
 	@$(MAKE) --no-print-directory s3-mm-tool #docs/mix.1
 
+.PHONY: swag
+swag:
+	swag init -g pkg/api/api.go
+
 .PHONY: s3-mm-tool
-s3-mm-tool:
+s3-mm-tool: swag
 	go build $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS)" ./cmd/s3-mm-tool
 
 docs/%.1: docs/%.ronn.1

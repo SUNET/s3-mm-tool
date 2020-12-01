@@ -10,7 +10,7 @@ import (
 
 var Log = logrus.New()
 
-var Context = Manifest{
+var Context = map[string]interface{}{
 	"@context": map[string]interface{}{
 		"mm":           "https://github.com/SUNET/metadata-manifests",
 		"dct":          "http://purl.org/dc/terms/",
@@ -23,13 +23,27 @@ var Context = Manifest{
 	},
 }
 
-type Manifest map[string]interface{}
-
-func (m *Manifest) AddContext() error {
-	return m.MergeManifests(Context)
+// ManifestEntry example
+type ManifestEntry struct {
+	ID     string `json:"@id" example:"@base/.metadata/dc.xml"`
+	Schema string `json:"mm:schema" example:"http://purl.org/dc/terms/"`
 }
 
-func (to *Manifest) MergeManifests(froms ...Manifest) error {
+// Manifest example
+type ManifestInfo struct {
+	Context      map[string]interface{} `json:"@context" swaggerignore:"true"`
+	Identifier   string                 `json:"mm:identifier" example:"https://s3.example.com/mybucket"`
+	Manifest     []ManifestEntry        `json:"mm:manifest"`
+	Publisher    string                 `json:"mm:publisher" example:"example.net"`
+	Creator      string                 `json:"mm:creator" example:"joe@example.net"`
+	RightsHolder string                 `json:"mm:rightsHolder" example:"example.com"`
+} //@name Manifest
+
+func (m *ManifestInfo) AddContext() {
+	m.Context = Context
+}
+
+func (to *ManifestInfo) MergeManifests(froms ...ManifestInfo) error {
 	var err error
 
 	for _, from := range froms {
@@ -41,34 +55,23 @@ func (to *Manifest) MergeManifests(froms ...Manifest) error {
 	return nil
 }
 
-func NewManifest() (*Manifest, error) {
-	m := new(Manifest)
-	err := m.AddContext()
-	if err != nil {
-		return nil, err
-	}
+func NewManifest() (*ManifestInfo, error) {
+	m := new(ManifestInfo)
+	m.AddContext()
 	return m, nil
 }
 
-func (m *Manifest) SetString(key string, value string) {
-	(*m)[key] = value
-}
-
-func (m *Manifest) Get(key string) interface{} {
-	return (*m)[key]
-}
-
-func NewSimpleManifest(creator string, publisher string) (*Manifest, error) {
+func NewSimpleManifest(creator string, publisher string) (*ManifestInfo, error) {
 	m, err := NewManifest()
 	if err != nil {
 		return nil, err
 	}
-	m.SetString("creator", creator)
-	m.SetString("publisher", publisher)
+	m.Creator = creator
+	m.Publisher = publisher
 	return m, nil
 }
 
-func (m *Manifest) ToString() string {
+func (m *ManifestInfo) ToString() string {
 	data, err := json.Marshal(m)
 	if err != nil {
 		Log.Fatal(err)

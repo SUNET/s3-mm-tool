@@ -16,14 +16,15 @@ import (
 
 var Log = logrus.New()
 
+// Destination example
 type Destination struct {
-	Endpoint    string `json:"endpoint"`
-	Region      string `json:"region"`
-	AccessKeyID string `json:"access_key"`
-	SecretKey   string `json:"secret_key"`
+	Endpoint    string `json:"endpoint" example:"https://s3.example.com/"`
+	Region      string `json:"region" example:"example-region"`
+	AccessKeyID string `json:"access_key" example:"access1"`
+	SecretKey   string `json:"secret_key" example:"secret1"`
 }
 
-func CreateS3DataContainer(dst Destination, name string, mm manifest.Manifest) error {
+func CreateS3DataContainer(dst Destination, name string, mm manifest.ManifestInfo) error {
 	bucket := aws.String(name)
 
 	s3Config := &aws.Config{
@@ -69,34 +70,3 @@ func CreateS3DataContainer(dst Destination, name string, mm manifest.Manifest) e
 
 	return nil
 }
-
-// func CreateS3DataContainerMinio(dst Destination, name string, mm manifest.Manifest) error {
-// 	ctx := context.Background()
-
-// 	minioClient, err := minio.New(dst.Endpoint, &minio.Options{
-// 		Creds:  credentials.NewStaticV4(dst.AccessKeyID, dst.SecretKey, ""),
-// 		Secure: true,
-// 	})
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	err = minioClient.MakeBucket(ctx, name, minio.MakeBucketOptions{Region: dst.Region})
-// 	if err != nil {
-// 		exists, errBucketExists := minioClient.BucketExists(ctx, name)
-// 		if errBucketExists != nil || !exists {
-// 			return err
-// 		}
-// 	}
-
-// 	data, _ := json.Marshal(mm)
-// 	Log.Debug(string(data))
-// 	info, err := minioClient.PutObject(ctx,
-// 		name,
-// 		".metadata/manifest.jsonld",
-// 		bytes.NewReader(data), int64(len(data)),
-// 		minio.PutObjectOptions{ContentType: "application/json"})
-
-// 	Log.Debug(info)
-// 	return err
-// }
